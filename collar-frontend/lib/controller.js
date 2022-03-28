@@ -12,18 +12,14 @@ import { ANIMALS } from './cursorNames';
 
 
 class Controller {
-  constructor(targetPeerId, host, peer, broadcast, editor, doc=document, win=window) {
+  constructor(targetPeerId, peer, broadcast, editor, doc=document, win=window) {
     this.siteId = UUID();
-    this.host = host;
     this.network = [];
     this.urlId = targetPeerId;
     this.makeOwnName(doc);
 
-    if (targetPeerId == 0) this.enableEditor();
-
     this.broadcast = broadcast;
     this.broadcast.controller = this;
-    this.broadcast.bindServerEvents(targetPeerId, peer);
 
     this.editor = editor;
     this.editor.controller = this;
@@ -33,10 +29,6 @@ class Controller {
     this.crdt = new CRDT(this);
     this.editor.bindButtons();
     this.bindCopyEvent(doc);
-  }
-
-  lostConnection() {
-    console.log('disconnected');
   }
 
   enableEditor(doc=document) {
@@ -56,25 +48,19 @@ class Controller {
     this.editor.replaceText(this.crdt.toText());
   }
 
-  addToNetwork(peerId, siteId, doc=document) {
+  addToNetwork(username, siteId, doc=document) {
     if (!this.network.find(obj => obj.siteId === siteId)) {
-      this.network.push({ peerId, siteId });
-      if (siteId !== this.siteId) {
-        this.addToListOfPeers(siteId, peerId, doc);
-      }
-
-      this.broadcast.addToNetwork(peerId, siteId);
+      this.network.push({ siteId, username });
     }
   }
 
   removeFromNetwork(peerId, doc=document) {
-    const peerObj = this.network.find(obj => obj.peerId === peerId);
+    const peerObj = this.network.find(obj => obj.username === username);
     const idx = this.network.indexOf(peerObj);
     if (idx >= 0) {
       const deletedObj = this.network.splice(idx, 1)[0];
-      this.removeFromListOfPeers(peerId, doc);
+      this.removeFromListOfPeers(username, doc);
       this.editor.removeCursor(deletedObj.siteId);
-      this.broadcast.removeFromNetwork(peerId);
     }
   }
 
@@ -121,57 +107,6 @@ class Controller {
     doc.getElementById(peerId).remove();
   }
 
-  findNewTarget() {
-    const connected = this.broadcast.outConns.map(conn => conn.peer);
-    const unconnected = this.network.filter(obj => {
-      return connected.indexOf(obj.peerId) === -1;
-    });
-
-    const possibleTargets = unconnected.filter(obj => {
-      return obj.peerId !== this.broadcast.peer.id
-    });
-
-    if (possibleTargets.length === 0) {
-      this.broadcast.peer.on('connection', conn => this.updatePageURL(conn.peer));
-    } else {
-      const randomIdx = Math.floor(Math.random() * possibleTargets.length);
-      const newTarget = possibleTargets[randomIdx].peerId;
-      this.broadcast.requestConnection(newTarget, this.broadcast.peer.id, this.siteId);
-    }
-  }
-
-  handleSync(syncObj, doc=document, win=window) {
-    if (syncObj.peerId != this.urlId) { this.updatePageURL(syncObj.peerId, win); }
-
-    syncObj.network.forEach(obj => this.addToNetwork(obj.peerId, obj.siteId, doc));
-
-    if (this.crdt.totalChars() === 0) {
-      this.populateCRDT(syncObj.initialStruct);
-    }
-    this.enableEditor(doc);
-
-    this.syncCompleted(syncObj.peerId);
-  }
-
-  syncCompleted(peerId) {
-    const completedMessage = JSON.stringify({
-      type: 'syncCompleted',
-      peerId: this.broadcast.peer.id
-    });
-
-    let connection = this.broadcast.outConns.find(conn => conn.peer === peerId);
-
-    if (connection) {
-      connection.send(completedMessage);
-    } else {
-      connection = this.broadcast.peer.connect(peerId);
-      this.broadcast.addToOutConns(connection);
-      connection.on('open', () => {
-        connection.send(completedMessage);
-      });
-    }
-  }
-
   handleRemoteOperation(operation) {
     if (this.vector.hasBeenApplied(operation.version)) return;
 
@@ -180,8 +115,6 @@ class Controller {
     } else if (operation.type === 'delete') {
       this.applyOperation(operation);
     }
-
-    this.broadcast.send(operation);
   }
 
   applyOperation(operation) {

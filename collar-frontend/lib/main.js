@@ -10,7 +10,7 @@ if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
 } else {
   new Controller(
     (location.search.slice(1) || '0'),
-    location.origin,
+    
     new Peer({
         debug: 3
       }),
