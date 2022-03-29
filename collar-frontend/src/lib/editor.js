@@ -4,81 +4,27 @@ import RemoteCursor from './remoteCursor';
 class Editor {
   constructor(mde) {
     this.controller = null;
-    this.mde = mde;
+    this.codemirror = mde;
     this.remoteCursors = {};
     this.customTabBehavior();
   }
 
   customTabBehavior() {
-    this.mde.codemirror.setOption("extraKeys", {
+    this.codemirror.setOption("extraKeys", {
       Tab: function(codemirror) {
         codemirror.replaceSelection("\t");
       }
     });
   }
 
-  bindButtons() {
-    if (this.controller.urlId == 0) {
-      this.bindUploadButton();
-    } else {
-      this.hideUploadButton();
-    }
-
-    this.bindDownloadButton();
-  }
-
-  bindDownloadButton() {
-    const dlButton = document.querySelector('#download');
-
-    dlButton.onclick = () => {
-      const textToSave = this.mde.value();
-      const textAsBlob = new Blob([textToSave], { type:"text/plain" });
-      const textAsURL = window.URL.createObjectURL(textAsBlob);
-      const fileName = "Conclave-"+Date.now();
-      const downloadLink = document.createElement("a");
-
-      downloadLink.download = fileName;
-      downloadLink.innerHTML = "Download File";
-      downloadLink.href = textAsURL;
-      downloadLink.onclick = this.afterDownload;
-      downloadLink.style.display = "none";
-
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-    };
-  }
-
-  afterDownload(e, doc=document) {
-    doc.body.removeChild(e.target);
-  }
-
-  hideUploadButton(doc=document) {
-    const ulButton = doc.querySelector('#upload');
-    const fileInput = doc.querySelector('#file');
-    ulButton.style.display = 'none';
-    fileInput.style.display = 'none';
-  }
-
-  bindUploadButton(doc=document) {
-    const fileSelect = doc.querySelector('#file');
-    fileSelect.onchange = () => {
-      const file = doc.querySelector("#file").files[0];
-      const fileReader = new FileReader();
-      fileReader.onload = (e) => {
-        const fileText = e.target.result;
-        this.controller.localInsert(fileText, { line: 0, ch: 0 });
-        this.replaceText(this.controller.crdt.toText());
-        this.hideUploadButton();
-      }
-      fileReader.readAsText(file, "UTF-8");
-    }
-  }
-
+ 
   bindChangeEvent() {
-    this.mde.codemirror.on("change", (_, changeObj) => {
+    this.codemirror.on("change", (_, changeObj) => {
       if (changeObj.origin === "setValue") return;
       if (changeObj.origin === "insertText") return;
       if (changeObj.origin === "deleteText") return;
+      
+      console.log(changeObj);
 
       switch(changeObj.origin) {
         case 'redo':
@@ -98,6 +44,7 @@ class Editor {
         default:
           throw new Error("Unknown operation attempted in editor.");
       }
+      console.log(this.controller.crdt.struct);
     });
   }
 
@@ -141,16 +88,16 @@ class Editor {
   }
 
   replaceText(text) {
-    const cursor = this.mde.codemirror.getCursor();
-    this.mde.value(text);
-    this.mde.codemirror.setCursor(cursor);
+    const cursor = this.codemirror.getCursor();
+    this.codemirror.setValue(text);
+    this.codemirror.setCursor(cursor);
   }
 
   insertText(value, positions, siteId) {
-    const localCursor = this.mde.codemirror.getCursor();
+    const localCursor = this.codemirror.getCursor();
     const delta = this.generateDeltaFromChars(value);
 
-    this.mde.codemirror.replaceRange(value, positions.from, positions.to, 'insertText');
+    this.codemirror.replaceRange(value, positions.from, positions.to, 'insertText');
     this.updateRemoteCursorsInsert(positions.to, siteId);
     this.updateRemoteCursor(positions.to, siteId, 'insert', value);
 
@@ -165,7 +112,7 @@ class Editor {
       localCursor.ch += delta.ch;
     }
 
-    this.mde.codemirror.setCursor(localCursor);
+    this.codemirror.setCursor(localCursor);
   }
 
   removeCursor(siteId) {
@@ -242,15 +189,15 @@ class Editor {
     if (remoteCursor) {
       remoteCursor.set(clonedPosition);
     } else {
-      this.remoteCursors[siteId] = new RemoteCursor(this.mde, siteId, clonedPosition);
+      this.remoteCursors[siteId] = new RemoteCursor(this.codemirror, siteId, clonedPosition);
     }
   }
 
   deleteText(value, positions, siteId) {
-    const localCursor = this.mde.codemirror.getCursor();
+    const localCursor = this.codemirror.getCursor();
     const delta = this.generateDeltaFromChars(value);
 
-    this.mde.codemirror.replaceRange("", positions.from, positions.to, 'deleteText');
+    this.codemirror.replaceRange("", positions.from, positions.to, 'deleteText');
     this.updateRemoteCursorsDelete(positions.to, siteId);
     this.updateRemoteCursor(positions.to, siteId, 'delete');
 
@@ -265,7 +212,7 @@ class Editor {
       localCursor.ch -= delta.ch;
     }
 
-    this.mde.codemirror.setCursor(localCursor);
+    this.codemirror.setCursor(localCursor);
   }
 
   findLinearIdx(lineIdx, chIdx) {

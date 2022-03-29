@@ -5,30 +5,28 @@ import Identifier from './identifier';
 import VersionVector from './versionVector';
 import Version from './version';
 import Broadcast from './broadcast';
-import UUID from 'uuid/v1';
+import { v1 as UUID } from 'uuid';
 import { generateItemFromHash } from './hashAlgo';
 import CSS_COLORS from './cssColors';
 import { ANIMALS } from './cursorNames';
 
 
 class Controller {
-  constructor(targetPeerId, peer, broadcast, editor, doc=document, win=window) {
+  constructor(targetPeerId, broadcast, editor, doc=document, win=window) {
     this.siteId = UUID();
     this.network = [];
     this.urlId = targetPeerId;
-    this.makeOwnName(doc);
 
     this.broadcast = broadcast;
     this.broadcast.controller = this;
-
+    this.broadcast.joinRoom("adnan" + Math.floor(Math.random() * 100),"public");
+    
     this.editor = editor;
     this.editor.controller = this;
     this.editor.bindChangeEvent();
     
     this.vector = new VersionVector(this.siteId);
     this.crdt = new CRDT(this);
-    this.editor.bindButtons();
-    this.bindCopyEvent(doc);
   }
 
   enableEditor(doc=document) {
@@ -47,6 +45,16 @@ class Controller {
     this.crdt.struct = struct;
     this.editor.replaceText(this.crdt.toText());
   }
+  
+  populateVersionVector(initialVersions) {
+    const versions = initialVersions.map(ver => {
+      let version = new Version(ver.siteId);
+      version.counter = ver.counter;
+      return version;
+    });
+
+    versions.forEach(version => this.vector.versions.push(version));
+  }
 
   addToNetwork(username, siteId, doc=document) {
     if (!this.network.find(obj => obj.siteId === siteId)) {
@@ -55,30 +63,15 @@ class Controller {
   }
 
   removeFromNetwork(peerId, doc=document) {
-    const peerObj = this.network.find(obj => obj.username === username);
+    const peerObj = this.network.find(obj => obj.username === peerId);
     const idx = this.network.indexOf(peerObj);
     if (idx >= 0) {
       const deletedObj = this.network.splice(idx, 1)[0];
-      this.removeFromListOfPeers(username, doc);
+      this.removeFromListOfPeers(peerId, doc);
       this.editor.removeCursor(deletedObj.siteId);
     }
   }
 
-  makeOwnName(doc=document) {
-    const listItem = doc.createElement('li');
-    const node = doc.createElement('span');
-    const textnode = doc.createTextNode("(You)")
-    const color = generateItemFromHash(this.siteId, CSS_COLORS);
-    const name = generateItemFromHash(this.siteId, ANIMALS);
-
-    node.textContent = name;
-    node.style.backgroundColor = color;
-    node.classList.add('peer');
-
-    listItem.appendChild(node);
-    listItem.appendChild(textnode);
-    doc.querySelector('#peerId').appendChild(listItem);
-  }
 
   addToListOfPeers(siteId, peerId, doc=document) {
     const listItem = doc.createElement('li');

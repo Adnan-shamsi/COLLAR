@@ -386,13 +386,13 @@ class CRDT {
         // Case 2: Head digits are the same, sites are different
         // Since the site acts as a tie breaker, it will always be the case that
         // cons(head1, anything) < position2
-        return cons(head1, generatePositionBetween(rest(position1), []));
+        return this.cons(head1, this.generatePosBetween(this.rest(position1), []));
       } else if (head1.siteId === head2.siteId) {
         // Case 3: Head digits and sites are the same
         // Need to recurse on the next digits
-        return cons(
+        return this.cons(
           head1,
-          generatePositionBetween(rest(position1), rest(position2))
+          this.generatePosBetween(this.rest(position1), this.rest(position2))
         );
       } else {
         throw new Error("invalid site ordering");

@@ -3,23 +3,30 @@ import socketio from "socket.io-client";
 class Broadcast {
   constructor() {
     this.teamMember = [];
-    this.socket = socketio.connect(process.env.REACT_APP_BASE_URL);
+    this.socket = socketio.connect(
+      process.env.BASE_URL || "http://localhost:8080/"
+    );
+
     this.controller = null;
-    this.socket.once("syncIntialData", () => syncInitialData());
-    this.socket.on("remoteChanges", (changes) => this.handleRemoteOperation(changes));
-    this.socket.on("sendFullData", ({ id }) => sendFullData(id));
-    this.socket.on("peopleInRoom", (data) => updateTeamMember(data));
+    this.socket.once("syncIntialData", () => this.syncInitialData());
+    this.socket.on("RemoteChanges", (changes) =>
+      this.handleRemoteOperation(changes)
+    );
+    //send full data to server then server will send to that particular id
+    this.socket.on("sendFullData", ({ id }) => this.sendFullData(id));  
+    this.socket.on("peopleInRoom", (data) => this.updateTeamMember(data));
   }
 
-  joinRoom() {
+  joinRoom(username, room) {
     this.socket.emit(
       "join",
       {
-        room: "public",
-        username: "adnan",
+        room,
+        username,
       },
       ({ error, user }) => {
         if (error) return alert(error);
+        console.log(user);
       }
     );
   }
@@ -40,18 +47,20 @@ class Broadcast {
     });
   }
 
-  syncInitialData(data){
+  syncInitialData(data) {
     this.controller.populateCRDT(data.crdt);
+    this.controller.populateVersionVector(data.versionVector);
   }
-  
-  handleRemoteOperation(data){
+
+  handleRemoteOperation(data) {
     this.controller.handleRemoteOperation(data);
   }
 
-  updateTeamMember(data){
-    if(data.userJoin){
+  updateTeamMember(data) {
+    console.log("updateTeamMember", data);
+    if (data.userJoin) {
       this.controller.addToNetwork(data.username, data.siteId);
-    }else{
+    } else {
       this.controller.removeFromNetwork(data.username);
     }
   }
