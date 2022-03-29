@@ -1,5 +1,5 @@
-import CRDT from './crdt';
-import RemoteCursor from './remoteCursor';
+import CRDT from "./crdt";
+import RemoteCursor from "./remoteCursor";
 
 class Editor {
   constructor(mde) {
@@ -11,40 +11,44 @@ class Editor {
 
   customTabBehavior() {
     this.codemirror.setOption("extraKeys", {
-      Tab: function(codemirror) {
+      Tab: function (codemirror) {
         codemirror.replaceSelection("\t");
-      }
+      },
     });
   }
 
- 
   bindChangeEvent() {
     this.codemirror.on("change", (_, changeObj) => {
       if (changeObj.origin === "setValue") return;
       if (changeObj.origin === "insertText") return;
       if (changeObj.origin === "deleteText") return;
-      
+
       console.log(changeObj);
 
-      switch(changeObj.origin) {
-        case 'redo':
-        case 'undo':
+      switch (changeObj.origin) {
+        case "redo":
+        case "undo":
           this.processUndoRedo(changeObj);
           break;
-        case '*compose':
-        case '+input':
-//          this.processInsert(changeObj);    // uncomment this line for palindromes!
-        case 'paste':
+        case "*compose":
+        case "+input":
+        //          this.processInsert(changeObj);    // uncomment this line for palindromes!
+        case "paste":
           this.processInsert(changeObj);
           break;
-        case '+delete':
-        case 'cut':
+        case "+delete":
+        case "cut":
           this.processDelete(changeObj);
           break;
         default:
           throw new Error("Unknown operation attempted in editor.");
       }
       console.log(this.controller.crdt.struct);
+    });
+
+    this.codemirror.on("beforeChange", function (_, change) {
+      const operations = ["redo", "undo"];
+      if(operations.includes(change.origin)) change.cancel();
     });
   }
 
@@ -80,8 +84,8 @@ class Editor {
   }
 
   extractChars(text) {
-    if (text[0] === '' && text[1] === '' && text.length === 2) {
-      return '\n';
+    if (text[0] === "" && text[1] === "" && text.length === 2) {
+      return "\n";
     } else {
       return text.join("\n");
     }
@@ -97,15 +101,23 @@ class Editor {
     const localCursor = this.codemirror.getCursor();
     const delta = this.generateDeltaFromChars(value);
 
-    this.codemirror.replaceRange(value, positions.from, positions.to, 'insertText');
+    this.codemirror.replaceRange(
+      value,
+      positions.from,
+      positions.to,
+      "insertText"
+    );
     this.updateRemoteCursorsInsert(positions.to, siteId);
-    this.updateRemoteCursor(positions.to, siteId, 'insert', value);
+    this.updateRemoteCursor(positions.to, siteId, "insert", value);
 
     if (localCursor.line > positions.to.line) {
-      localCursor.line += delta.line
-    } else if (localCursor.line === positions.to.line && localCursor.ch > positions.to.ch) {
+      localCursor.line += delta.line;
+    } else if (
+      localCursor.line === positions.to.line &&
+      localCursor.ch > positions.to.ch
+    ) {
       if (delta.line > 0) {
-        localCursor.line += delta.line
+        localCursor.line += delta.line;
         localCursor.ch -= positions.to.ch;
       }
 
@@ -135,7 +147,10 @@ class Editor {
 
       if (newPosition.line > position.line) {
         newPosition.line += positionDelta.line;
-      } else if (newPosition.line === position.line && newPosition.ch > position.ch) {
+      } else if (
+        newPosition.line === position.line &&
+        newPosition.ch > position.ch
+      ) {
         if (positionDelta.line > 0) {
           newPosition.line += positionDelta.line;
           newPosition.ch -= position.ch;
@@ -144,7 +159,7 @@ class Editor {
         newPosition.ch += positionDelta.ch;
       }
 
-      remoteCursor.set(newPosition)
+      remoteCursor.set(newPosition);
     }
   }
 
@@ -167,7 +182,7 @@ class Editor {
         newPosition.ch -= positionDelta.ch;
       }
 
-      remoteCursor.set(newPosition)
+      remoteCursor.set(newPosition);
     }
   }
 
@@ -175,10 +190,10 @@ class Editor {
     const remoteCursor = this.remoteCursors[siteId];
     const clonedPosition = Object.assign({}, position);
 
-    if (opType === 'insert') {
-      if (value === '\n') {
+    if (opType === "insert") {
+      if (value === "\n") {
         clonedPosition.line++;
-        clonedPosition.ch = 0
+        clonedPosition.ch = 0;
       } else {
         clonedPosition.ch++;
       }
@@ -189,7 +204,11 @@ class Editor {
     if (remoteCursor) {
       remoteCursor.set(clonedPosition);
     } else {
-      this.remoteCursors[siteId] = new RemoteCursor(this.codemirror, siteId, clonedPosition);
+      this.remoteCursors[siteId] = new RemoteCursor(
+        this.codemirror,
+        siteId,
+        clonedPosition
+      );
     }
   }
 
@@ -197,13 +216,21 @@ class Editor {
     const localCursor = this.codemirror.getCursor();
     const delta = this.generateDeltaFromChars(value);
 
-    this.codemirror.replaceRange("", positions.from, positions.to, 'deleteText');
+    this.codemirror.replaceRange(
+      "",
+      positions.from,
+      positions.to,
+      "deleteText"
+    );
     this.updateRemoteCursorsDelete(positions.to, siteId);
-    this.updateRemoteCursor(positions.to, siteId, 'delete');
+    this.updateRemoteCursor(positions.to, siteId, "delete");
 
     if (localCursor.line > positions.to.line) {
       localCursor.line -= delta.line;
-    } else if (localCursor.line === positions.to.line && localCursor.ch > positions.to.ch) {
+    } else if (
+      localCursor.line === positions.to.line &&
+      localCursor.ch > positions.to.ch
+    ) {
       if (delta.line > 0) {
         localCursor.line -= delta.line;
         localCursor.ch += positions.from.ch;
@@ -218,7 +245,7 @@ class Editor {
   findLinearIdx(lineIdx, chIdx) {
     const linesOfText = this.controller.crdt.text.split("\n");
 
-    let index = 0
+    let index = 0;
     for (let i = 0; i < lineIdx; i++) {
       index += linesOfText[i].length + 1;
     }
@@ -231,7 +258,7 @@ class Editor {
     let counter = 0;
 
     while (counter < chars.length) {
-      if (chars[counter] === '\n') {
+      if (chars[counter] === "\n") {
         delta.line++;
         delta.ch = 0;
       } else {

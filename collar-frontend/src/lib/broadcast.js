@@ -8,12 +8,12 @@ class Broadcast {
     );
 
     this.controller = null;
-    this.socket.once("syncIntialData", () => this.syncInitialData());
+    this.socket.once("syncIntialData", (data) => this.syncInitialData(data));
     this.socket.on("RemoteChanges", (changes) =>
       this.handleRemoteOperation(changes)
     );
     //send full data to server then server will send to that particular id
-    this.socket.on("sendFullData", ({ id }) => this.sendFullData(id));  
+    this.socket.on("sendFullData", ({ id }) => this.sendFullData(id));
     this.socket.on("peopleInRoom", (data) => this.updateTeamMember(data));
   }
 
@@ -39,12 +39,16 @@ class Broadcast {
   }
 
   sendFullData(id) {
-    this.socket.emit("MyFullData", {
+    if(this.controller.crdt.isEmpty()) return;
+    let data = {
       sendTo: id,
-      crdt: this.controller.crdt,
-      versionVector: this.controller.versionVector,
+      crdt:this.controller.crdt.struct,
+      versionVector: this.controller.vector,
       senderSiteId: this.controller.siteId,
-    });
+    };
+    //data = JSON.parse(JSON.stringify(data))
+     this.socket.emit("MyFullData", data);
+    console.log("done");
   }
 
   syncInitialData(data) {

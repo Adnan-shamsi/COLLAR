@@ -1,4 +1,4 @@
-const { addUser, removeUser, getUser, getUsersInRoom } = require("usersData");
+const { addUser, removeUser, getUser, getUsersInRoom } = require("./usersData");
 
 module.exports = function (io) {
   io.on("connection", (socket) => {
@@ -57,8 +57,9 @@ module.exports = function (io) {
     });
 
     socket.on("MyFullData", (data) => {
+      console.log('MyFullData:',data);
       try {
-        io.to(data.sendTo).emit("FullData", { data });
+        io.to(data.sendTo).emit("syncIntialData", data);
       } catch (e) {
         console.log(e);
       }

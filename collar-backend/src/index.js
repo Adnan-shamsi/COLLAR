@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
     res.send("<h1>Hello world</h1>");
 });
 
-require("./socketFunc")(io);
+require("./socketFun/socketFun")(io);
 
 server.listen(port, () => {
   console.log(`listening on *:${port}`);
