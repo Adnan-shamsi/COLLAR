@@ -46,7 +46,7 @@ const CodeMirror = () => {
         }}
         editorDidMount={(editor) => {
           setEditorRef(editor);
-          editor.setSize("99vw", "97vh");
+          editor.setSize("98vw", "97vh");
         }}
       />
     </div>

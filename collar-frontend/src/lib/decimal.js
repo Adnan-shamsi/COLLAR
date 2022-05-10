@@ -16,9 +16,9 @@ export function toIdentifierList(n,
         if (index === n.length - 1) {
             return new Identifier(digit, creationSite);
         } else if (index < before.length && digit === before[index].digit) {
-            return new Identifier(digit, before[index].site);
+            return new Identifier(digit, before[index].siteId);
         } else if (index < after.length && digit === after[index].digit) {
-            return new Identifier(digit, after[index].site);
+            return new Identifier(digit, after[index].siteId);
         } else {
             return new Identifier(digit, creationSite);
         }

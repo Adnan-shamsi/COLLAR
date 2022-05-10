@@ -19,7 +19,8 @@ class Controller {
 
     this.broadcast = broadcast;
     this.broadcast.controller = this;
-    this.broadcast.joinRoom("adnan" + Math.floor(Math.random() * 100),"public");
+    this.username = "random_user@" + Math.floor(Math.random() * 1000);
+    this.broadcast.joinRoom(this.username,"public");
     
     this.editor = editor;
     this.editor.controller = this;
@@ -27,10 +28,6 @@ class Controller {
     
     this.vector = new VersionVector(this.siteId);
     this.crdt = new CRDT(this);
-  }
-
-  enableEditor(doc=document) {
-    doc.getElementById('conclave').classList.remove('hide');
   }
 
   populateCRDT(initialStruct) {
@@ -47,6 +44,7 @@ class Controller {
   }
   
   populateVersionVector(initialVersions) {
+    console.log(initialVersions);
     const versions = initialVersions.map(ver => {
       let version = new Version(ver.siteId);
       version.counter = ver.counter;

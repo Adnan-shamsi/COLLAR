@@ -23,7 +23,7 @@ class Editor {
       if (changeObj.origin === "insertText") return;
       if (changeObj.origin === "deleteText") return;
 
-      console.log(changeObj);
+      console.log('local-changes',changeObj);
 
       switch (changeObj.origin) {
         case "redo":
@@ -43,7 +43,7 @@ class Editor {
         default:
           throw new Error("Unknown operation attempted in editor.");
       }
-      console.log(this.controller.crdt.struct);
+      console.log('crdt structure',this.controller.crdt.struct);
     });
 
     this.codemirror.on("beforeChange", function (_, change) {
@@ -200,14 +200,15 @@ class Editor {
     } else {
       clonedPosition.ch--;
     }
-
+    return;
     if (remoteCursor) {
       remoteCursor.set(clonedPosition);
     } else {
       this.remoteCursors[siteId] = new RemoteCursor(
         this.codemirror,
         siteId,
-        clonedPosition
+        clonedPosition,
+        this.controller.username,
       );
     }
   }
