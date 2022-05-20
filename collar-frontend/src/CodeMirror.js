@@ -16,7 +16,9 @@ const CodeMirror = () => {
     if (editorRef) {
       console.log("done");
       const editor = new Editor(editorRef);
-      new Controller("jinga",new Broadcast(), editor);
+      
+      new Controller("jinga", new Broadcast(), editor);
+      editorRef.setValue('azimjaved23')
       console.log("done2");
     }
   }, [editorRef]);
@@ -33,11 +35,11 @@ const CodeMirror = () => {
       <CodeMirrorEditor
         autoScroll
         options={{
-          mode: "python",
+          mode: "c++",
           theme: "monokai",
           spellChecker: false,
-          toolbar: false,
-          autofocus: false,
+          toolbar: true,
+          autofocus: true,
           indentWithTabs: true,
           tabSize: 4,
           indentUnit: 4,

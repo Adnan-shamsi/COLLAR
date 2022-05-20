@@ -19,11 +19,12 @@ class Editor {
 
   bindChangeEvent() {
     this.codemirror.on("change", (_, changeObj) => {
+      console.log(changeObj);
       if (changeObj.origin === "setValue") return;
       if (changeObj.origin === "insertText") return;
       if (changeObj.origin === "deleteText") return;
 
-      console.log(changeObj);
+
 
       switch (changeObj.origin) {
         case "redo":
@@ -48,7 +49,7 @@ class Editor {
 
     this.codemirror.on("beforeChange", function (_, change) {
       const operations = ["redo", "undo"];
-      if(operations.includes(change.origin)) change.cancel();
+      if (operations.includes(change.origin)) change.cancel();
     });
   }
 

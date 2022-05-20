@@ -8,7 +8,7 @@ class Broadcast {
     );
 
     this.controller = null;
-    this.socket.once("syncIntialData", (data) => this.syncInitialData(data));
+    // this.socket.once("syncIntialData", (data) => this.syncInitialData(data));
     this.socket.on("RemoteChanges", (changes) =>
       this.handleRemoteOperation(changes)
     );
