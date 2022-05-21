@@ -23,7 +23,7 @@ export const testRepeat = async (callback, n, startTime) => {
     await sleep1s()
 
     for (let i = 0; i < n; i++) {
-        callback(Date.now())
+        callback(Date.now(), i)
         await sleep1s()
     }
 }

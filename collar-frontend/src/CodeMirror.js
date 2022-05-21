@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { UnControlled as CodeMirrorEditor } from "react-codemirror2";
 import Editor from "./lib/editor";
 import Controller from "./lib/controller";
@@ -7,21 +7,29 @@ import Broadcast from "./lib/broadcast";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/monokai.css";
 import "codemirror/mode/python/python";
+import { testRepeat } from "./lib/testScript";
 
 const CodeMirror = () => {
   const [code, setCode] = useState(null);
   const [editorRef, setEditorRef] = useState(null);
 
+  const cb = useCallback((time, i) => {
+    editorRef.setValue('time: ' + time + '; i: ' + i)
+  }, [editorRef])
+  
   useEffect(() => {
     if (editorRef) {
       console.log("done");
       const editor = new Editor(editorRef);
-      
       new Controller("jinga", new Broadcast(), editor);
-      editorRef.setValue('azimjaved23')
+      // editorRef.setValue('azimjaved23')
+    
+      testRepeat(cb, 10, Date.now() + 10000)
       console.log("done2");
     }
-  }, [editorRef]);
+  }, [editorRef, cb]);
+
+
 
   return (
     <div

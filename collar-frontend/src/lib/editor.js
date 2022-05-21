@@ -20,7 +20,7 @@ class Editor {
   bindChangeEvent() {
     this.codemirror.on("change", (_, changeObj) => {
       console.log(changeObj);
-      if (changeObj.origin === "setValue") return;
+      if (changeObj.origin === "setValue") { changeObj.origin = 'paste' };
       if (changeObj.origin === "insertText") return;
       if (changeObj.origin === "deleteText") return;
 

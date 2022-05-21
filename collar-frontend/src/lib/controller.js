@@ -159,6 +159,7 @@ class Controller {
 
   insertIntoEditor(value, pos, siteId) {
     const positions = {
+      
       from: {
         line: pos.line,
         ch: pos.ch,
