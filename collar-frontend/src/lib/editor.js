@@ -21,8 +21,8 @@ class Editor {
     this.codemirror.on("change", (_, changeObj) => {
       console.log(changeObj);
       if (changeObj.origin === "setValue") { changeObj.origin = 'paste' };
-      if (changeObj.origin === "insertText") return;
-      if (changeObj.origin === "deleteText") return;
+      if (changeObj.origin === "insertText") { changeObj.origin = 'paste' };
+      if (changeObj.origin === "deleteText") { changeObj.origin = 'cut' };
 
 
       console.log('local-changes', changeObj);
