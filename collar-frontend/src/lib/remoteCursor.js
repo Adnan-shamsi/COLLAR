@@ -3,11 +3,11 @@ import { generateItemFromHash } from './hashAlgo';
 import { ANIMALS } from './cursorNames';
 
 export default class RemoteCursor {
-  constructor(mde, siteId, position) {
-    this.mde = mde;
+  constructor(codemirror, siteId, position, username) {
+    this.codemirror = codemirror;
 
-    const color = generateItemFromHash(siteId, CSS_COLORS);
-    const name = generateItemFromHash(siteId, ANIMALS);
+    const color = 'red';
+    const name = username;
 
     this.createCursor(color);
     this.createFlag(color, name);
@@ -17,7 +17,7 @@ export default class RemoteCursor {
   }
 
   createCursor(color) {
-    const textHeight = this.mde.codemirror.defaultTextHeight();
+    const textHeight = this.codemirror.defaultTextHeight();
 
     this.cursor = document.createElement('div');
     this.cursor.classList.add('remote-cursor');
@@ -27,7 +27,6 @@ export default class RemoteCursor {
 
   createFlag(color, name) {
     const cursorName = document.createTextNode(name);
-
     this.flag = document.createElement('span');
     this.flag.classList.add('flag');
     this.flag.style.backgroundColor = color;
@@ -36,10 +35,9 @@ export default class RemoteCursor {
 
   set(position) {
     this.detach();
-
-    const coords = this.mde.codemirror.cursorCoords(position, 'local');
+    const coords = this.codemirror.cursorCoords(position, 'local');
     this.cursor.style.left = (coords.left >= 0 ? coords.left : 0) + 'px';
-    this.mde.codemirror.getDoc().setBookmark(position, { widget: this.cursor });
+    this.codemirror.getDoc().setBookmark(position, { widget: this.cursor });
     this.lastPosition = position;
     
     // Add a zero width-space so line wrapping works (on firefox?)

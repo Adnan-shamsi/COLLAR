@@ -35,9 +35,8 @@ class VersionVector {
     if (!isIncomingInVersionVector) return false;
 
     const isIncomingLower = incomingVersion.counter <= localIncomingVersion.counter;
-    const isInExceptions = localIncomingVersion.exceptions.includes(incomingVersion.counter);
 
-    return isIncomingLower && !isInExceptions;
+    return isIncomingLower;
   }
 
   getVersionFromVector(incomingVersion) {

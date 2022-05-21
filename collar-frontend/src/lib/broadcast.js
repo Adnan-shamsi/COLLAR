@@ -39,15 +39,15 @@ class Broadcast {
   }
 
   sendFullData(id) {
-    if(this.controller.crdt.isEmpty()) return;
+    if (this.controller.crdt.isEmpty()) return;
     let data = {
       sendTo: id,
-      crdt:this.controller.crdt.struct,
-      versionVector: this.controller.vector,
+      crdt: this.controller.crdt.struct,
+      versionVector: this.controller.vector.versions,
       senderSiteId: this.controller.siteId,
     };
     //data = JSON.parse(JSON.stringify(data))
-     this.socket.emit("MyFullData", data);
+    this.socket.emit("MyFullData", data);
     console.log("done");
   }
 

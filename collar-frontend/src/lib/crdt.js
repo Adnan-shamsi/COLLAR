@@ -351,15 +351,22 @@ class CRDT {
     } else if (line > numLines - 1 && ch === 0) {
       return [];
     }
-
+    console.log('after position identifier',this.struct[line][ch].position)
     return this.struct[line][ch].position;
   }
 
   generateChar(val, pos) {
     const posBefore = this.findPosBefore(pos);
     const posAfter = this.findPosAfter(pos);
-    const newPos = this.generatePosBetween(posBefore, posAfter);
-
+    let newPos;
+    try{
+      console.log("MOVING GENERATE POS BETWEEN")
+      newPos = this.generatePosBetween(posBefore, posAfter);
+    }catch(e){
+      console.log('before', posBefore)
+      console.log('after', posAfter)
+      return alert('wrong ordering')
+    }
     return new Char(val, this.vector.localVersion.counter, this.siteId, newPos);
   }
 
@@ -370,7 +377,7 @@ class CRDT {
     // Get either the head of the position, or fallback to default value
     const head1 = position1[0] || new Identifier(0, this.siteId);
     const head2 = position2[0] || new Identifier(Decimal.BASE, this.siteId);
-
+    console.log('head', head1,head2)
     if (head1.digit !== head2.digit) {
       // Case 1: Head digits are different
       // It's easy to create a position to insert in-between by doing regular arithmetics.
