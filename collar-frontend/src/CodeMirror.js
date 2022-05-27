@@ -11,17 +11,26 @@ import "codemirror/mode/python/python";
 const CodeMirror = () => {
   const [code, setCode] = useState(null);
   const [editorRef, setEditorRef] = useState(null);
-
+  let broadcast = null;
+  
   useEffect(() => {
     if (editorRef) {
       console.log("done");
       const editor = new Editor(editorRef);
-      new Controller("jinga",new Broadcast(), editor);
+      broadcast = new Broadcast();
+      new Controller("jinga", broadcast, editor);
       console.log("done2");
     }
   }, [editorRef]);
 
+  const compile = () =>{
+    if(!broadcast) return alert('no connection');
+    //console.log('code Compiles',editorRef.getValue())
+    broadcast.codeCompilation({language:'python', code:editorRef.getValue()});
+  }
+
   return (
+    <>
     <div
       style={{
         height: "100%",
@@ -30,6 +39,7 @@ const CodeMirror = () => {
         overflow: "auto",
       }}
     >
+      
       <CodeMirrorEditor
         autoScroll
         options={{
@@ -46,10 +56,12 @@ const CodeMirror = () => {
         }}
         editorDidMount={(editor) => {
           setEditorRef(editor);
-          editor.setSize("98vw", "97vh");
+          editor.setSize("98vw", "90vh");
         }}
       />
     </div>
+    <div style={{textAlign:'center',margin:'10px'}}><button style={{fontSize:'2em'}} onClick={compile}>COMPILE</button></div>
+   </> 
   );
 };
 

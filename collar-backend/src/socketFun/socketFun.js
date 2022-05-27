@@ -1,4 +1,5 @@
 const { addUser, removeUser, getUser, getUsersInRoom } = require("./usersData");
+const {compilerFunc} = require('../utils/compile.js')
 
 module.exports = function (io) {
   io.on("connection", (socket) => {
@@ -64,6 +65,22 @@ module.exports = function (io) {
         console.log(e);
       }
     });
+    
+    //codeCompile and broadcast
+    socket.on("codeCompile", async(data) => {
+      console.log('codeCompile')
+      try {
+        const {language ,code, input} = data;
+        let res = await compilerFunc(language, code, input);
+        console.log(res.data)
+        const { room } = getUser(socket.id);
+        if (!room) return;
+        io.to(room).emit("compileResult", res.data);
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
     //real-time updates on the change in IO
     socket.on("LocalChanges", (data) => {
       try {

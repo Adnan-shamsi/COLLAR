@@ -15,6 +15,15 @@ class Broadcast {
     //send full data to server then server will send to that particular id
     this.socket.on("sendFullData", ({ id }) => this.sendFullData(id));
     this.socket.on("peopleInRoom", (data) => this.updateTeamMember(data));
+    this.socket.on("compileResult", (data) => this.notifyCompileResult(data));
+  }
+  
+  codeCompilation(data){
+    this.socket.emit('codeCompile',data)
+  }
+  
+  notifyCompileResult(data){
+    alert(data.output);
   }
 
   joinRoom(username, room) {
