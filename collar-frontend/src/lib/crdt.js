@@ -358,10 +358,13 @@ class CRDT {
   generateChar(val, pos) {
     const posBefore = this.findPosBefore(pos);
     const posAfter = this.findPosAfter(pos);
+    console.log('before', posBefore)
+    console.log('after', posAfter)
     let newPos;
     try{
       console.log("MOVING GENERATE POS BETWEEN")
       newPos = this.generatePosBetween(posBefore, posAfter);
+      console.log('newPos', newPos)
     }catch(e){
       console.log('before', posBefore)
       console.log('after', posAfter)
@@ -377,7 +380,7 @@ class CRDT {
     // Get either the head of the position, or fallback to default value
     const head1 = position1[0] || new Identifier(0, this.siteId);
     const head2 = position2[0] || new Identifier(Decimal.BASE, this.siteId);
-    console.log('head', head1,head2)
+    //console.log('head', head1,head2)
     if (head1.digit !== head2.digit) {
       // Case 1: Head digits are different
       // It's easy to create a position to insert in-between by doing regular arithmetics.
@@ -402,7 +405,11 @@ class CRDT {
           this.generatePosBetween(this.rest(position1), this.rest(position2))
         );
       } else {
-        throw new Error("invalid site ordering");
+        console.error("writing in the beginning boundary condition");
+        let delta = position2.map(e => e.digit);
+        const firstNonzeroDigit = delta.findIndex(x => x !== 0);
+        const curr = delta.slice(0, firstNonzeroDigit).concat([0, 1]);
+        return Decimal.toIdentifierList(curr, position1, position2, this.siteId);;
       }
     }
   }
