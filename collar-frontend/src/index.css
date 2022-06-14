@@ -1,0 +1,13 @@
+.CodeMirror-linenumber {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+	font-size: 0.7em;
+    opacity: 60%;
+    height: 1.6em;
+}
+
+.CodeMirror {
+    border: 5px black;
+    border-style:ridge
+}

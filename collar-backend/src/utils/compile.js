@@ -58,7 +58,7 @@ const compilerFunc = async (lang, code, input) => {
     language,
     versionIndex,
   };
-  //console.log(process.env,sendData)
+  console.log(process.env,sendData)
   let response = {};
   try {
     response = await axios({
