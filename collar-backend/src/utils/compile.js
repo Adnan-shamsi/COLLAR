@@ -40,15 +40,15 @@ const languageMapper = (lang_mode) => {
     case "nodejs":
       return { language: "nodejs", versionIndex: "3" };
   }
- 
+
   return {};
 };
 
 const compilerFunc = async (lang, code, input) => {
   const { language, versionIndex } = languageMapper(lang);
- 
+
   const url = "https://api.jdoodle.com/v1/execute";
-  const [clientId,clientSecret] = [process.env.CLIENT_ID,process.env.CLIENT_SECRET];
+  const [clientId, clientSecret] = [process.env.CLIENT_ID, process.env.CLIENT_SECRET];
 
   const sendData = {
     clientId,
@@ -58,11 +58,11 @@ const compilerFunc = async (lang, code, input) => {
     language,
     versionIndex,
   };
-  console.log(process.env,sendData)
+  console.log(process.env, sendData)
   let response = {};
   try {
     response = await axios({
-      method: "post", //you can set what request you want to be
+      method: "post",
       url,
       data: sendData,
     });
@@ -70,8 +70,7 @@ const compilerFunc = async (lang, code, input) => {
     response = e;
     return {
       data: {
-        e:
-          "Error:404\nOops Something went wrong\n😢😞🙁",
+        response: response
       },
     };
   }
