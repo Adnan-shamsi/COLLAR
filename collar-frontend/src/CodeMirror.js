@@ -95,10 +95,7 @@ const CodeMirror = () => {
 			code: editorRef.getValue(),
 			input: inputValue
 		});
-		console.log(result)
-		console.log(result?.response?.status != 200)
-		console.log(result?.statusCode != 200)
-		if (result?.response?.status != 200 && result?.statusCode != 200) {
+		if (result?.response?.status !== 200 && result?.statusCode !== 200) {
 			setOutputValue({ output: `An error occured: ${result.response.message}` })
 		}
 		else {
