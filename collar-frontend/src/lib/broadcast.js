@@ -4,7 +4,7 @@ class Broadcast {
   constructor() {
     this.teamMember = [];
     this.socket = socketio.connect(
-      process.env.BASE_URL || "http://localhost:8080/"
+      process.env.REACT_APP_BASE_URL || "http://localhost:8080/"
     );
 
     this.controller = null;
